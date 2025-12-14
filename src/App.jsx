@@ -79,7 +79,7 @@ function App() {
                 href="https://www.linkedin.com/in/mahdee-al-amin/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-emerald-900 hover:text-white transition"
+                className="font-semibold text-gray-300 hover:text-white transition"
               >
                 Mahdee Al Amin
               </a>
