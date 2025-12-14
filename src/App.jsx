@@ -1,22 +1,34 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import AddDonationPage from './pages/AddDonationPage'
 import ManageDonorsPage from './pages/ManageDonorsPage'
 
 function App() {
-  const [donations, setDonations] = useState([])
+  // Load donations from localStorage on initial render
+  const [donations, setDonations] = useState(() => {
+    const savedDonations = localStorage.getItem('donations')
+    return savedDonations ? JSON.parse(savedDonations) : []
+  })
+
+  // Save donations to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('donations', JSON.stringify(donations))
+  }, [donations])
 
   const addDonation = (donation) => {
-    setDonations([...donations, { ...donation, id: Date.now() }])
+    const newDonations = [...donations, { ...donation, id: Date.now() }]
+    setDonations(newDonations)
   }
 
   const updateDonation = (id, updatedDonation) => {
-    setDonations(donations.map(d => d.id === id ? { ...updatedDonation, id } : d))
+    const newDonations = donations.map(d => d.id === id ? { ...updatedDonation, id } : d)
+    setDonations(newDonations)
   }
 
   const deleteDonation = (id) => {
-    setDonations(donations.filter(d => d.id !== id))
+    const newDonations = donations.filter(d => d.id !== id)
+    setDonations(newDonations)
   }
 
   return (
