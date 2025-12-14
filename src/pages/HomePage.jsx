@@ -307,7 +307,7 @@ const HomePage = ({ donations }) => {
       {/* Donation Table */}
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600">
-          <h3 className="text-xl font-bold text-white">দান তালিকা</h3>
+          <h3 className="text-xl font-bold text-white text-center">দান তালিকা</h3>
         </div>
         
         {donations.length === 0 ? (
