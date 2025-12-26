@@ -111,7 +111,7 @@ const HomePage = ({ donations }) => {
     
     // Summary section - Elegant box design
     const summaryY = 85
-    const summaryHeight = 35
+    const summaryHeight = 28
     const summaryX = 15
     const summaryWidth = pageWidth - 30
     
@@ -124,45 +124,46 @@ const HomePage = ({ donations }) => {
     doc.setLineWidth(0.5)
     doc.roundedRect(summaryX, summaryY, summaryWidth, summaryHeight, 3, 3, 'S')
     
-    // Summary title with icon effect
+    // Summary title
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(13)
     doc.setTextColor(5, 150, 105)
     doc.text('SUMMARY', summaryX + 5, summaryY + 8)
     
-    // Summary details
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(11)
-    doc.setTextColor(0, 0, 0)
+    // Summary details in single row
+    const rowY = summaryY + 17
     
-    // Left column - Fix decimal precision issue
+    // Total Donations (Left side)
     doc.setFont('helvetica', 'bold')
-    doc.text('Total Donations:', summaryX + 5, summaryY + 18)
-    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(0, 0, 0)
+    doc.text('Total Donations:', summaryX + 5, rowY)
+    
+    doc.setFont('helvetica', 'bold')
     doc.setTextColor(22, 163, 74)
-    doc.setFontSize(12)
-    // Use Math.round to fix floating point precision
-    const roundedTotal = Math.round(totalAmount * 100) / 100
-    doc.text(`${roundedTotal.toFixed(2)} BDT`, summaryX + 5, summaryY + 25)
-    
-    // Right column
-    doc.setTextColor(0, 0, 0)
     doc.setFontSize(11)
+    const roundedTotal = Math.round(totalAmount * 100) / 100
+    doc.text(`${roundedTotal.toFixed(2)} BDT`, summaryX + 45, rowY)
+    
+    // Total Donors (Right side)
     doc.setFont('helvetica', 'bold')
-    doc.text('Total Donors:', summaryX + 90, summaryY + 18)
-    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(0, 0, 0)
+    doc.text('Total Donors:', summaryX + 100, rowY)
+    
+    doc.setFont('helvetica', 'bold')
     doc.setTextColor(59, 130, 246)
-    doc.setFontSize(12)
-    doc.text(`${totalPeople}`, summaryX + 90, summaryY + 25)
+    doc.setFontSize(11)
+    doc.text(`${totalPeople}`, summaryX + 130, rowY)
     
     // Generated date/time
     doc.setTextColor(100, 100, 100)
-    doc.setFontSize(9)
+    doc.setFontSize(8)
     doc.setFont('helvetica', 'italic')
     const now = new Date()
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
     const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    doc.text(`Generated: ${dateStr} at ${timeStr}`, summaryX + 5, summaryY + 32)
+    doc.text(`Generated: ${dateStr} at ${timeStr}`, summaryX + 5, summaryY + 24)
     
     // Table with transliterated Bengali names
     const tableData = donations.map((donation, index) => {
@@ -184,7 +185,7 @@ const HomePage = ({ donations }) => {
     })
     
     doc.autoTable({
-      startY: 130,
+      startY: 120,
       head: [['#', 'Date', 'Name', 'Amount (BDT)', 'Payment Type']],
       body: tableData,
       theme: 'grid',
@@ -215,8 +216,18 @@ const HomePage = ({ donations }) => {
         lineColor: [200, 200, 200],
         lineWidth: 0.1
       },
-      margin: { top: 130, left: 15, right: 15 },
+      margin: { left: 15, right: 15 },
+      showHead: 'everyPage',
       didDrawPage: function (data) {
+        // Set proper top margin for all pages
+        if (data.pageNumber === 1) {
+          // First page already has content above
+          data.settings.margin.top = 120
+        } else {
+          // Subsequent pages start from top
+          data.settings.margin.top = 20
+        }
+        
         // Footer on each page
         doc.setFontSize(8)
         doc.setTextColor(128, 128, 128)
@@ -247,23 +258,33 @@ const HomePage = ({ donations }) => {
     
     // Add total at the end of the table if there are donations
     if (donations.length > 0) {
-      const finalY = doc.lastAutoTable.finalY || 130
+      const finalY = doc.lastAutoTable.finalY || 120
       
-      // Total row
+      // Calculate total width to match table columns exactly
+      const totalTableWidth = 15 + 30 + 70 + 35 + 35 // sum of all column widths
+      const startX = 15 // same as table margin left
+      
+      // Total row background
       doc.setFillColor(236, 253, 245)
-      doc.rect(15, finalY + 2, pageWidth - 30, 10, 'F')
-      doc.setDrawColor(16, 185, 129)
-      doc.rect(15, finalY + 2, pageWidth - 30, 10, 'S')
+      doc.rect(startX, finalY + 2, totalTableWidth, 10, 'F')
       
+      // Border
+      doc.setDrawColor(16, 185, 129)
+      doc.setLineWidth(0.5)
+      doc.rect(startX, finalY + 2, totalTableWidth, 10, 'S')
+      
+      // "GRAND TOTAL" text (left side, spanning first 3 columns)
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(11)
       doc.setTextColor(5, 150, 105)
-      doc.text('GRAND TOTAL', 20, finalY + 8.5)
+      doc.text('GRAND TOTAL', startX + 5, finalY + 8.5)
+      
+      // Amount (aligned with amount column)
       doc.setTextColor(22, 163, 74)
       doc.setFontSize(12)
-      // Use the same rounded total
       const roundedTotal = Math.round(totalAmount * 100) / 100
-      doc.text(`${roundedTotal.toFixed(2)} BDT`, pageWidth - 20, finalY + 8.5, { align: 'right' })
+      const amountX = startX + 15 + 30 + 70 + 35 // position at end of amount column
+      doc.text(`${roundedTotal.toFixed(2)}`, amountX - 2, finalY + 8.5, { align: 'right' })
     }
     
     // Save the PDF
